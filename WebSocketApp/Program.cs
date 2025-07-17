@@ -12,9 +12,11 @@ internal class Program
     {
         Console.WriteLine("WS Server configure");
         
-        string serverUrl = "http://localhost:8080/ws/";
-        
-        listener.Prefixes.Add(serverUrl);
+        string serverUrl1 = "http://localhost:8080/ws/";
+        string serverUrl2 = "http://localhost:8080/";
+
+        listener.Prefixes.Add(serverUrl1);
+        listener.Prefixes.Add(serverUrl2);
         listener.Start();
 
         _ = Task.Run(() =>
