@@ -64,7 +64,7 @@ internal class Program
         var buffer = WebSocket.CreateClientBuffer(4096, 4096);
 
         var result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
-        while (result.CloseStatus.HasValue == false)
+        while (result.CloseStatus.HasValue == false || result.MessageType != WebSocketMessageType.Close)
         {
             var message = Encoding.UTF8.GetString(buffer);
             Console.WriteLine($"Message {message} received");
