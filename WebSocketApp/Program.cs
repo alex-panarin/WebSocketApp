@@ -7,11 +7,12 @@ namespace WebSocketApp;
 internal class Program
 {
     static readonly CancellationTokenSource tokenSource = new();
-    static readonly HttpListener listener = new HttpListener();
     static async Task Main(string[] args)
     {
         Console.WriteLine("WS Server configure");
-        
+
+        using HttpListener listener = new HttpListener();
+
         string serverUrl1 = "http://localhost:8080/ws/";
         string serverUrl2 = "http://localhost:8080/";
 
