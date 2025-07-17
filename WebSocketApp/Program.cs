@@ -53,9 +53,8 @@ internal class Program
     {
         if(context.Request.IsWebSocketRequest == false)
         {
-            await context.Response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes("Only WS connection allowed"));
             context.Response.StatusCode = 200;
-            context.Response.Close();
+            context.Response.Close(Encoding.UTF8.GetBytes("Only WS connection allowed"), false);
         }
 
         var wsContext = await context.AcceptWebSocketAsync(null);
