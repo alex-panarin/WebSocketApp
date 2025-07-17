@@ -44,7 +44,6 @@ internal class Program
         }
         catch (HttpListenerException)
         {
-
         }
     }
 
@@ -62,25 +61,30 @@ internal class Program
 
         Console.WriteLine($"WS {wsSocket} connection established");
         var buffer = WebSocket.CreateClientBuffer(4096, 4096);
-
-        var result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
-        while (result.CloseStatus.HasValue == false || result.MessageType != WebSocketMessageType.Close)
+        try
         {
-            var message = Encoding.UTF8.GetString(buffer);
-            Console.WriteLine($"Message {message} received");
+            var result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
+            while (result.CloseStatus.HasValue == false || result.MessageType != WebSocketMessageType.Close)
+            {
+                var message = Encoding.UTF8.GetString(buffer);
+                Console.WriteLine($"Message {message} received");
 
-            var sendMessage = Encoding.UTF8.GetBytes($"WS Server echo: {message}");
-            await wsSocket.SendAsync(sendMessage, WebSocketMessageType.Text, true, tokenSource.Token);
+                var sendMessage = Encoding.UTF8.GetBytes($"WS Server echo: {message}");
+                await wsSocket.SendAsync(sendMessage, WebSocketMessageType.Text, true, tokenSource.Token);
 
-            result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
+                result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
+            }
+
+            if (result.CloseStatus is not null)
+            {
+                Console.WriteLine($"WS connection closing ....");
+                await wsSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, tokenSource.Token);
+
+                Console.WriteLine($"WS connection closed");
+            }
         }
-
-        if (result.CloseStatus is not null)
-        {
-            Console.WriteLine($"WS connection closing ....");
-            await wsSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, tokenSource.Token);
-
-            Console.WriteLine($"WS connection closed");
+        catch(OperationCanceledException)
+        { 
         }
     }
 }
