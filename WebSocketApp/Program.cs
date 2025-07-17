@@ -7,22 +7,44 @@ namespace WebSocketApp;
 internal class Program
 {
     static readonly CancellationTokenSource tokenSource = new();
-
+    static readonly HttpListener listener = new HttpListener();
     static async Task Main(string[] args)
     {
         Console.WriteLine("WS Server configure");
         
         string serverUrl = "http://localhost:8080/ws/";
-        HttpListener listener = new HttpListener();
+        
         listener.Prefixes.Add(serverUrl);
         listener.Start();
 
-        Console.WriteLine("WS Server started, waiting connection...");
-
-        while (tokenSource.IsCancellationRequested == false) 
+        _ = Task.Run(() =>
         {
-            var context = await listener.GetContextAsync();
-            _ = Task.Factory.StartNew(() => HandleConnectionAsync(context));
+            Console.WriteLine("Type \"stop\" to interrupt the job :)");
+            while (true)
+            {
+                var input = Console.ReadLine();
+                if (input == "stop")
+                {
+                    tokenSource.Cancel();
+                    listener.Abort();
+                    Console.WriteLine("WS Server stopped...");
+                    break;
+                }
+            }
+        });
+
+        Console.WriteLine("WS Server started, waiting connection...");
+        try
+        {
+            while (tokenSource.IsCancellationRequested == false)
+            {
+                var context = await listener.GetContextAsync();
+                _ = Task.Run(() => HandleConnectionAsync(context));
+            }
+        }
+        catch (HttpListenerException)
+        {
+
         }
     }
 
@@ -47,7 +69,7 @@ internal class Program
             var message = Encoding.UTF8.GetString(buffer);
             Console.WriteLine($"Message {message} received");
 
-            var sendMessage = Encoding.UTF8.GetBytes($"Server echo: {message}");
+            var sendMessage = Encoding.UTF8.GetBytes($"WS Server echo: {message}");
             await wsSocket.SendAsync(sendMessage, WebSocketMessageType.Text, true, tokenSource.Token);
 
             result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
