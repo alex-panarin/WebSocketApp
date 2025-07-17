@@ -47,8 +47,8 @@ internal class Program
             var message = Encoding.UTF8.GetString(buffer);
             Console.WriteLine($"Message {message} received");
 
-            byte[] sendMessage = Encoding.UTF8.GetBytes($"Server echo: {message}");
-            await wsSocket.SendAsync(new ArraySegment<byte>(sendMessage), WebSocketMessageType.Text, true, tokenSource.Token);
+            var sendMessage = Encoding.UTF8.GetBytes($"Server echo: {message}");
+            await wsSocket.SendAsync(sendMessage, WebSocketMessageType.Text, true, tokenSource.Token);
 
             result = await wsSocket.ReceiveAsync(buffer, tokenSource.Token);
         }
